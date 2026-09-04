@@ -101,3 +101,8 @@ MIT License。
 
 作者：[COSMICAL-CONTAINER](https://github.com/COSMICAL-CONTAINER)
 协作：ZCode 智能体（GLM，Z.ai）——数据分析、看板实现与可视化验收
+
+## 致谢
+
+- [farion1231/cc-switch](https://github.com/farion1231/cc-switch) —— 本工具读取并展示其本地数据库，一切数据归功于它
+- [Apache ECharts](https://echarts.apache.org/) —— 图表引擎

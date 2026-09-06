@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__BOARD_TITLE__</title>
+<style>
+  :root{
+    --bg:#05070f; --card1:rgba(19,28,55,.9); --card2:rgba(11,16,33,.86);
+    --line:rgba(96,165,250,.16); --txt:#e2e8f0; --dim:rgba(148,163,184,.75);
+    --cyan:#22d3ee; --violet:#a78bfa; --magenta:#e879f9; --green:#34d399; --amber:#fbbf24; --pink:#f472b6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--txt);
+    font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif; min-height:100vh; overflow-x:hidden}
+  .bg-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;transform:translateZ(0);
+    background:
+      radial-gradient(900px 520px at 12% -8%, rgba(34,211,238,.14), transparent 60%),
+      radial-gradient(820px 560px at 95% 12%, rgba(167,139,250,.13), transparent 62%),
+      radial-gradient(760px 600px at 55% 115%, rgba(232,121,249,.10), transparent 60%),
+      linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+    background-size:auto,auto,auto,44px 44px,44px 44px}
+  .wrap{max-width:1840px;margin:0 auto;padding:34px 40px 56px}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important} html{scroll-behavior:auto} }
+  header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;padding:6px 4px 26px}
+  h1{font-size:34px;font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(92deg,#67e8f9 0%,#a78bfa 45%,#e879f9 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 22px rgba(34,211,238,.35))}
+  h1 .logo{display:inline-block;margin-right:14px;padding:2px 12px;border-radius:10px;
+    border:1px solid rgba(34,211,238,.4);font-size:15px;font-weight:700;color:var(--cyan);
+    -webkit-text-fill-color:var(--cyan);vertical-align:14px;letter-spacing:2px;
+    box-shadow:0 0 14px rgba(34,211,238,.25), inset 0 0 10px rgba(34,211,238,.12)}
+  .sub{margin-top:10px;color:var(--dim);font-size:14px}
+  .sub b{color:#93c5fd;font-weight:600}
+  .range{display:flex;gap:10px}
+  .range button{cursor:pointer;font-family:inherit;font-size:14px;color:var(--dim);
+    padding:9px 22px;border-radius:999px;border:1px solid rgba(148,163,184,.28);
+    background:rgba(15,23,42,.55);transition:all .25s}
+  .range button:hover{color:var(--txt);border-color:rgba(34,211,238,.5)}
+  .range button.active{color:#04121f;font-weight:700;border-color:transparent;
+    background:linear-gradient(92deg,var(--cyan),var(--violet));
+    box-shadow:0 0 18px rgba(34,211,238,.4)}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:20px;margin-bottom:24px}
+  @media(max-width:1500px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{position:relative;overflow:hidden;border-radius:18px;padding:20px 22px 18px;
+    background:linear-gradient(160deg,var(--card1),var(--card2));
+    border:1px solid var(--line);
+    box-shadow:0 8px 32px rgba(2,6,23,.55), inset 0 1px 0 rgba(255,255,255,.045);
+    transition:transform .25s, border-color .25s}
+  .kpi:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.4)}
+  .kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px;
+    background:linear-gradient(180deg,var(--c1),var(--c2));box-shadow:0 0 12px var(--c1)}
+  .kpi .lb{font-size:13px;color:var(--dim);letter-spacing:1px}
+  .kpi .v{font-size:27px;font-weight:800;margin-top:10px;font-variant-numeric:tabular-nums;
+    color:var(--vc,var(--txt));text-shadow:0 0 18px rgba(34,211,238,.15)}
+  .kpi .st{margin-top:7px;font-size:12px;color:rgba(148,163,184,.68)}
+  .card{position:relative;border-radius:18px;padding:22px 26px;margin-bottom:24px;
+    background:linear-gradient(160deg,var(--card1),var(--card2));
+    border:1px solid var(--line);
+    box-shadow:0 8px 32px rgba(2,6,23,.55), inset 0 1px 0 rgba(255,255,255,.04)}
+  .card h2{font-size:17px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:11px}
+  .card h2::before{content:"";width:5px;height:18px;border-radius:3px;
+    background:linear-gradient(180deg,var(--cyan),var(--magenta));box-shadow:0 0 10px rgba(34,211,238,.7)}
+  .card .note{margin-left:auto;font-size:12px;color:rgba(148,163,184,.62);font-weight:400;letter-spacing:0}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .grid-2 .card{margin-bottom:24px}
+  @media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
+  .chart{width:100%}
+  footer{margin-top:8px;padding:18px 26px;border-radius:14px;color:rgba(148,163,184,.62);
+    font-size:12.5px;line-height:2;background:rgba(10,15,30,.5);border:1px solid rgba(96,165,250,.1)}
+  footer b{color:#94a3b8;font-weight:600}
+  /* 表格（registry: table） */
+  .table-wrap{margin-top:16px;max-height:480px;overflow:auto;border-radius:12px;border:1px solid rgba(96,165,250,.12)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+  thead th{position:sticky;top:0;z-index:2;background:rgba(13,20,40,.97);color:#7dd3fc;
+    font-weight:600;padding:11px 14px;text-align:right;white-space:nowrap;cursor:pointer;user-select:none;
+    border-bottom:1px solid rgba(34,211,238,.25)}
+  thead th:first-child{text-align:left}
+  thead th:hover{color:#e0f2fe;text-shadow:0 0 10px rgba(34,211,238,.6)}
+  thead th .arr{font-size:10px;margin-left:4px;color:var(--cyan)}
+  tbody td{padding:9.5px 14px;text-align:right;color:#cbd5e1;white-space:nowrap;
+    border-bottom:1px solid rgba(148,163,184,.07)}
+  tbody td:first-child{text-align:left;color:#93c5fd;font-weight:600}
+  tbody tr:hover td{background:rgba(34,211,238,.06)}
+  td.cost{color:#67e8f9;font-weight:700}
+  tfoot td{position:sticky;bottom:0;background:rgba(13,20,40,.97);padding:11px 14px;text-align:right;
+    font-weight:700;color:#e0f2fe;border-top:1px solid rgba(34,211,238,.3)}
+  tfoot td:first-child{text-align:left}
+  section{scroll-margin-top:18px}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1><span class="logo">__BOARD_LOGO__</span>__BOARD_TITLE__</h1>
+    <div class="sub" id="subLine"></div>
+  </div>
+  <div class="range" id="rangeSwitch"></div>
+</header>
+
+<section class="kpis" id="kpis"></section>
+<div id="charts"></div>
+
+<footer id="footer"></footer>
+
+</div>
+
+<script>__ECHARTS_JS__</script>
+<script>
+const DATA = __DATA_JSON__;
+__BOARD_CONFIG_JS__
+</script>
+<script>
+/* ================= 核心渲染引擎（数据源无关） ================= */
+const $ = id => document.getElementById(id);
+const Core = { charts: {}, registry: {} };
+Core.PAL = ['#22d3ee','#a78bfa','#e879f9','#34d399','#fbbf24','#f472b6','#60a5fa','#f87171','#4ade80','#fb923c'];
+Core.AXT = 'rgba(148,163,184,.78)';
+Core.SPLIT = 'rgba(148,163,184,.08)';
+Core.fmt = {
+  hms: s => { const h=Math.floor(s/3600), m=Math.round(Math.abs(s)%3600/60); return h ? `${h}h ${String(m).padStart(2,'0')}m` : `${m}m ${String(Math.round(Math.abs(s)%60)).padStart(2,'0')}s`; },
+  hrs: s => (s/3600).toFixed(1) + 'h',
+  int: n => Number(n||0).toLocaleString('en-US'),
+  pct: n => (n*100).toFixed(1) + '%',
+  tok: n => n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n)),
+  money: n => '$' + Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}),
+  moneyS: n => n>=1000?'$'+(n/1000).toFixed(2)+'K':'$'+Number(n||0).toFixed(2),
+  md: d => d.slice(5)
+};
+Core.mk = id => { Core.charts[id] = echarts.init($(id), null, {devicePixelRatio: Math.min(window.devicePixelRatio||1, 1.5)}); return Core.charts[id]; };
+Core.ma = (arr, n=7) => arr.map((_,i)=>{ const s=arr.slice(Math.max(0,i-n+1), i+1); return +(s.reduce((a,x)=>a+x,0)/s.length).toFixed(3); });
+Core.tip = extra => Object.assign({backgroundColor:'rgba(10,16,34,.94)', borderColor:'rgba(34,211,238,.35)',
+  borderWidth:1, textStyle:{color:'#e2e8f0', fontSize:13}, extraCssText:'box-shadow:0 6px 24px rgba(2,6,23,.6);border-radius:10px;'}, extra);
+Core.registerChart = (type, fn) => { Core.registry[type] = fn; };
+Core.ds = () => state.days > 0 ? DATA.daily.slice(-state.days) : DATA.daily;
+
+/* ---- KPI 卡片：BOARD.kpis(ds, DATA) -> [{icon,label,value,sub,c1,c2,vc}] ---- */
+function renderKPIs(ds){
+  $('kpis').innerHTML = BOARD.kpis(ds, DATA).map(k =>
+    `<div class="kpi" style="--c1:${k.c1};--c2:${k.c2};${k.vc ? '--vc:'+k.vc : ''}">` +
+    `<div class="lb">${k.icon} ${k.label}</div><div class="v">${k.value}</div><div class="st">${k.sub || ''}</div></div>`
+  ).join('');
+}
+
+/* ---- 图表卡片：BOARD.charts(ds, DATA) -> [{id,type,title,note,full,...spec}] ---- */
+function renderCharts(ds){
+  const specs = BOARD.charts(ds, DATA);
+  let html = '', pair = [];
+  const flush = () => { if (pair.length){ html += `<div class="grid-2">${pair.join('')}</div>`; pair = []; } };
+  for (const s of specs){
+    const card = `<section class="card" id="sec_${s.id}"><h2>${s.title}<span class="note">${s.note || ''}</span></h2>` +
+      `<div id="chart_${s.id}" class="chart" style="height:${s.height || 340}px"></div></section>`;
+    if (s.full){ flush(); html += card; } else { pair.push(card); if (pair.length === 2) flush(); }
+  }
+  flush();
+  $('charts').innerHTML = html;
+  for (const s of specs){
+    const ch = Core.mk('chart_' + s.id);
+    const fn = Core.registry[s.type];
+    if (!fn){ $('chart_' + s.id).innerHTML = '<p style="color:#f87171">未知图表类型: ' + s.type + '</p>'; continue; }
+    try { fn(ch, s, Core.ds(), DATA, Core); }
+    catch (e){ $('chart_' + s.id).innerHTML = '<p style="color:#f87171">渲染失败: ' + e.message + '</p>'; }
+    const noteEl = document.querySelector(`#sec_${s.id} .note`);
+    if (noteEl && s.note) noteEl.textContent = s.note;  // 允许渲染器回填动态说明
+  }
+}
+
+/* ---- 区间切换 + 初始化 ---- */
+const state = {days: 0};
+function renderAll(){ const ds = Core.ds(); renderKPIs(ds); renderCharts(ds); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (BOARD.onInit) BOARD.onInit(Core, DATA);  // 适配器注册自定义图表
+  $('subLine').innerHTML = BOARD.subLine(DATA);
+  $('footer').innerHTML = BOARD.footerHtml;
+  $('rangeSwitch').innerHTML = BOARD.ranges.map((r,i) =>
+    `<button data-days="${r.days}" class="${i===0?'active':''}">${r.label}</button>`).join('');
+  document.querySelectorAll('#rangeSwitch button').forEach(b => b.addEventListener('click', () => {
+    document.querySelector('#rangeSwitch .active').classList.remove('active');
+    b.classList.add('active');
+    state.days = +b.dataset.days;
+    renderAll();
+  }));
+  renderAll();
+});
+window.addEventListener('resize', () => Object.values(Core.charts).forEach(c => c.resize()));
+window.addEventListener('load', () => {
+  const m = location.hash.match(/@(\d+)/);
+  if (m){ const b = document.querySelector(`#rangeSwitch button[data-days="${m[1]}"]`); if (b) b.click(); }
+  const anchor = location.hash.split('@')[0];
+  if (anchor.length > 1){ const el = document.querySelector(anchor); if (el) el.scrollIntoView({block:'start', behavior:'instant'}); }
+});
+</script>
+<script>__CHARTS_JS__</script>
+</body>
+</html>

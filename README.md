@@ -1,108 +1,121 @@
-# cc-switch-stats-viewer · CC-Switch 用量统计看板
+# local-stats-boards · 本地数据看板工具箱
 
-[cc-switch](https://github.com/farion1231/cc-switch) 是一个很好用的 Claude Code / Codex 供应商切换工具，但它的**用量统计只能看最近 30 天**的明细——更早的数据虽然在本地数据库里留有日汇总，却再也看不到了。
+一套渲染核心，多个数据看板。目前内置：
 
-这个工具把 `~/.cc-switch/cc-switch.db` 里的**日汇总表 + 请求明细表**两段数据无缝拼合，还原出完整历史用量，并生成一个**离线单文件可视化看板**（ECharts 内嵌、数据内联，双击即开、不依赖网络）。
+| 看板 | 数据源 | 内容 |
+|---|---|---|
+| **CC-Switch 用量统计中心** | cc-switch 本地数据库（SQLite） | 供应商消费、模型切换史、Token 构成、使用节奏热力图 |
+| **WakaTime 编程时长看板** | [WakaTime](https://wakatime.com) API | 编程时长趋势、项目/语言排行、活跃度分析 |
 
-## 演示
+所有看板都是**单文件 HTML**：ECharts 与数据全部内嵌，双击即开、离线可用、不依赖任何服务。
 
-以下动图按功能分组，均为虚构假数据（`python build.py --demo` 生成，固定随机种子可复现）。想亲手体验全部交互，直接下载 [`demo.html`](demo.html)（1.1 MB，纯离线单文件）双击打开即可。
+![CC-Switch 看板演示](demo/01-overview-range.gif)
 
-**① 总览与时间范围联动** —— 切到"近 30 天"，KPI 卡片与所有图表一起切换口径
+> 为什么做这个：cc-switch 的统计界面只能看最近 30 天，WakaTime 干脆没有 ZCode 插件——与其等官方，不如自己把数据拿出来画。
 
-![总览与范围联动](demo/01-overview-range.gif)
+## 快速开始
 
-**② 每日消费趋势** —— 悬停看当日费用 / 均线 / 成功率，框选缩放任意时间段
+前置：Python 3（仅标准库，无需 pip 装任何东西）。
 
-![趋势图悬停与缩放](demo/02-trend-zoom.gif)
+**Windows 一键刷新**：双击 `刷新看板.bat`，全部看板重建完毕后自动打开。
 
-**③ 模型分析** —— 费用占比环形图悬停，使用演进堆叠面积图看清模型切换史
-
-![模型分析](demo/03-models.gif)
-
-**④ Token 构成与供应商费用榜** —— 输入 / 输出 / 缓存读写四段构成，供应商横向对比
-
-![Token构成与供应商榜](demo/04-token-provider.gif)
-
-**⑤ 使用节奏热力图与请求质量** —— 星期 × 24 小时使用密度；近 30 天成功率 / 延迟 / 429
-
-![使用节奏与请求质量](demo/05-rhythm-quality.gif)
-
-**⑥ 每日明细表排序** —— 点表头按任意列排序（图为按费用降序）
-
-![明细表排序](demo/06-table-sort.gif)
-
-## 功能
-
-- **KPI 总览**：总消费 / 总请求 / 峰值单日 / 累计 Token / 成功率 / 平均延迟
-- **时间范围联动**：全部 / 近 90 / 近 30 / 近 7 天一键切换，KPI、趋势图、模型榜、明细表同步刷新
-- **每日消费趋势**：柱状 + 7 日均线 + 框选缩放，悬停看当日详情
-- **模型分析**：费用占比环形图、使用演进堆叠面积图（看清模型切换史）、Token 构成（缓存读占比一目了然）
-- **供应商费用榜**、**星期 × 24 小时使用节奏热力图**
-- **近 30 天请求质量**：成功率、延迟、429/5xx 统计
-- **每日明细表**：点表头按任意列排序
-
-## 使用
-
-前置：Python 3（仅标准库），本机已安装 cc-switch 且有使用记录。
-
-**方式一**：双击 `刷新数据.bat`（Windows），自动重建看板并在浏览器打开。
-
-**方式二**：命令行
+**命令行**：
 
 ```bash
-python build.py > 我的看板.html          # 真实数据
-python build.py --demo > demo.html      # 虚构演示数据（开源展示用，不含任何真实记录）
+python sources/ccswitch.py > boards/cc-switch.html     # cc-switch 用量看板（读本地数据库）
+python sources/wakatime.py  > boards/wakatime.html     # WakaTime 时长看板（调 API，自动重试限流）
+python sources/ccswitch.py --demo > demo.html          # 虚构假数据版（开源展示/截图用，可公开）
 ```
 
-生成的 HTML 用任意浏览器打开即可；数据是静态快照，想更新重跑一遍。
+数据是生成时刻的静态快照，想更新就重跑。
 
-## 数据导出（CSV）
-
-不想看看板、想做自己的分析？`export.py` 可以把数据库里的用量数据导出为 CSV（UTF-8 带 BOM，Excel 双击打开不乱码）：
-
-```bash
-python export.py daily  > usage_daily.csv    # 每日汇总（95 天完整历史）
-python export.py models > usage_models.csv   # 每日 × 模型汇总
-python export.py logs   > request_logs.csv   # 近 30 天逐请求明细（12 万+ 行）
-```
-
-各文件列说明：
-
-| 文件 | 列 |
-|---|---|
-| usage_daily.csv | 日期、请求数、成功数、成功率、输入/输出/缓存读/缓存写 Token、总 Token、费用USD |
-| usage_models.csv | 日期、模型、请求数、输入/输出/缓存读/缓存写 Token、费用USD |
-| request_logs.csv | 请求ID、本地时间、应用、供应商ID、模型、请求模型、四类 Token、费用USD、延迟ms、状态码、流式、数据来源、会话ID |
-
-## 目录结构
+## 架构
 
 ```
-build.py        看板构建脚本（--demo 生成假数据；只读数据库，stdout 出 HTML、stderr 出诊断）
-export.py       CSV 导出脚本（daily / models / logs 三个子命令，stdout 输出、Excel 友好）
-template.html   看板模板（__ECHARTS_JS__ / __DATA_JSON__ 占位符；#f=N 为 GIF 录制用演示帧深链）
-echarts.min.js  Apache ECharts 5.5.1（构建时内嵌进产物）
-make_gif.py     分功能演示 GIF 生成脚本（整页截图按锚点裁剪 → PIL 分组合成，输出 demo/*.gif）
-刷新数据.bat     一键重建看板并打开（GBK + CRLF 编码，勿用编辑器转 UTF-8）
-demo.html       演示版看板（假数据，可公开）
-demo/*.gif      README 分功能演示动图（6 组）
+local-stats-boards/
+├── core/                     # ★ 只写一次的渲染核心
+│   ├── base_template.html    #   骨架：暗色霓虹 CSS / KPI 卡 / 区间切换 / 卡片布局
+│   ├── charts.js             #   图表注册表：trend·stack·hbar·donut·hstack·heatmap·table
+│   ├── render.py             #   注入器：DATA + BOARD配置 + echarts → 单文件 HTML
+│   ├── net.py                #   网络层：SSRF 白名单 + DNS 私网拒绝 + 禁重定向 + 429/断连重试
+│   ├── verify.py             #   验收：无头 Chrome 截图 + 控制台错误检查（PASS/FAIL）
+│   └── echarts.min.js        #   Apache ECharts 5.5.1
+├── sources/                  # ★ 每个数据源一个薄适配器
+│   ├── ccswitch.py           #   cc-switch.db 聚合 + 图表声明（--demo 生成假数据）
+│   └── wakatime.py           #   WakaTime Summaries API 聚合 + 图表声明
+├── boards/                   # 生成产物（gitignore，含个人数据不入库）
+├── demo/                     # cc-switch 看板演示动图
+└── export.py                 # cc-switch 数据 CSV 导出（daily/models/logs）
 ```
+
+三层职责：**core 不知道数据长什么样**，只负责把 `DATA` 和 `BOARD 配置` 渲染成页面；**sources 不知道页面长什么样**，只负责取数和声明"用哪几种图表展示"；**boards 是产物**，不进版本库。
+
+## 如何新增一个看板
+
+只需要写一个适配器文件，三步，约 100 行：
+
+```python
+# sources/myboard.py
+import os, sys, json
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))
+from core import render
+
+# ① 取数并标准化：daily 数组是核心，每天一条记录，字段随意
+def fetch():
+    return [{"d": "2026-09-01", "steps": 8000}]
+
+CONFIG_JS = r"""
+window.BOARD = {
+  title: '我的看板',
+  ranges: [{label:'全部',days:0},{label:'近 30 天',days:30}],
+  subLine: D => `记录 ${D.meta.days} 天`,
+  footerHtml: '口径说明……',
+  kpis: (ds, D) => [{icon:'👟', label:'总步数', value:ds.reduce((a,d)=>a+d.steps,0).toLocaleString(),
+                     c1:'#22d3ee', c2:'#a78bfa'}],
+  charts: (ds, D) => [{id:'trend', type:'trend', title:'每日步数', full:true,
+                       values: ds=>ds.map(d=>d.steps), tip:(ds,i)=>`第 ${i} 天`}],
+};
+"""
+
+data = {"meta": {"days": 1}, "daily": fetch()}
+sys.stdout.write(render.render_board("我的看板", "LOGO", json.dumps(data), CONFIG_JS))
+```
+
+运行 `python sources/myboard.py > boards/myboard.html` 即得看板。内置七种图表可直接声明复用：`trend`（柱+均线+缩放）、`stack`（堆叠面积）、`hbar`（排行）、`donut`（占比环）、`hstack`（横向堆叠）、`heatmap`（热力图）、`table`（可排序表格）；声明式覆盖不了的，用 `BOARD.onInit` + `Core.registerChart` 注册自定义渲染（cc-switch 的请求质量图就是这么做的）。
 
 ## 数据口径
 
-- `usage_daily_rollups`（长期日汇总）∪ `proxy_request_logs`（近 30 天逐请求明细），两段日期不重叠、不重复计数
-- 明细表 `created_at` 为**秒级** Unix 时间戳（按毫秒除 1000 会得到 1970）
-- 费用按 cc-switch 内置定价与倍率估算，仅供参考
-- 全程本地计算，不联网、不上传任何数据
+- **cc-switch**：`usage_daily_rollups`（长期日汇总）∪ `proxy_request_logs`（近 30 天明细），两段日期不重叠、不重复计数；明细表 `created_at` 为**秒级**时间戳；费用按 cc-switch 内置定价估算
+- **WakaTime**：免费版即支持全历史 Summaries API（实测 2023 年至今均可），限速 1 请求/秒已自动处理
+- 构建脚本全部 stdout 输出、失败月份/失败步骤明确报错，不会静默缺数据
+
+## 隐私
+
+- `boards/`、`preview/`、`*.db` 均在 `.gitignore` 中，**生成的看板和数据库不会进版本库**
+- 对外展示请用 `python sources/ccswitch.py --demo` 生成的虚构数据版（固定随机种子，数字与图形都可复现）
+- WakaTime API Key 只存在本机 `~/.wakatime.cfg`，脚本运行时读取，不回显不落盘
+
+## 常见问题
+
+- **bat 中文乱码 / 执行报错**：`刷新看板.bat` 必须保持 GBK + CRLF 编码（已是），不要用现代编辑器另存为 UTF-8
+- **WakaTime 数据只更新到昨天**：心跳由各编辑器插件上报，ZCode 侧请配合 [zcode-wakatime](https://github.com/COSMICAL-CONTAINER/zcode-wakatime) 插件使用
+- **看板双击打开后空白**：确认文件完整生成（几 MB 级别）；部分浏览器对 `file://` 下的大文件首屏渲染需要一两秒
+
+## Roadmap
+
+- [ ] ZCode 官方插件市场开放上架后，将本工具箱打包提交
+- [ ] WakaTime AI 用量（token/成本）按天聚合的可靠口径
+- [ ] 更多数据源适配器：Git 提交统计、番茄钟……
 
 ## 许可与署名
 
-MIT License。
+MIT License © 2026 [COSMICAL-CONTAINER](https://github.com/COSMICAL-CONTAINER)
 
-作者：[COSMICAL-CONTAINER](https://github.com/COSMICAL-CONTAINER)
-协作：ZCode 智能体（GLM，Z.ai）——数据分析、看板实现与可视化验收
+协作：ZCode 智能体（GLM，Z.ai）——架构设计、看板实现与自动化验收
 
 ## 致谢
 
-- [farion1231/cc-switch](https://github.com/farion1231/cc-switch) —— 本工具读取并展示其本地数据库，一切数据归功于它
+- [cc-switch](https://github.com/farion1231/cc-switch) —— 供应商切换工具，本工具箱的第一个数据源
+- [WakaTime](https://wakatime.com) —— 编程时长统计服务
 - [Apache ECharts](https://echarts.apache.org/) —— 图表引擎
